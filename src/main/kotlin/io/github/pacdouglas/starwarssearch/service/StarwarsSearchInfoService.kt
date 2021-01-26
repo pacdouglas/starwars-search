@@ -6,14 +6,13 @@ import com.google.common.cache.CacheBuilder
 import info.debatty.java.stringsimilarity.JaroWinkler
 import info.debatty.java.stringsimilarity.LongestCommonSubsequence
 import info.debatty.java.stringsimilarity.MetricLCS
-import io.github.pacdouglas.starwarssearch.model.StarWarsInfoSearchCount
+import io.github.pacdouglas.starwarssearch.data.MetricsUpdater
 import io.github.pacdouglas.starwarssearch.model.StarwarsInfo
 import io.github.pacdouglas.starwarssearch.model.SwApiRawData
 import io.github.pacdouglas.starwarssearch.repository.StarWarsInfoSearchCountRepository
 import io.github.pacdouglas.starwarssearch.repository.SwApiRawDataRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
 @Service
@@ -37,7 +36,7 @@ class StarwarsSearchInfoService(private val rawDataRepo: SwApiRawDataRepository,
         val found = findAsLike(filteredByType, partOfName)
                 ?: findAsJaroWinkler(filteredByType, partOfName)
 
-        updateCountTable(partOfName, found)
+        MetricsUpdater.updateCountTable(searchCountRepo, partOfName, found)
 
         if (found == null) {
             return StarwarsInfo(emptyMap(), emptyList())
@@ -105,16 +104,6 @@ class StarwarsSearchInfoService(private val rawDataRepo: SwApiRawDataRepository,
                 val filteredByType = allData.filter { it.type == current.type }
                 buildSimilarInfo(filteredByType, current)
             }
-        }
-    }
-
-    private val threadPool = Executors.newFixedThreadPool(1)
-    private fun updateCountTable(partOfName: String, found: SwApiRawData?) {
-        threadPool.submit {
-            val searchCountEntity = searchCountRepo.findById(partOfName).orElseGet {
-                StarWarsInfoSearchCount(partOfName, found)
-            }
-            searchCountRepo.save(searchCountEntity.copy(count = searchCountEntity.count + 1L))
         }
     }
 }

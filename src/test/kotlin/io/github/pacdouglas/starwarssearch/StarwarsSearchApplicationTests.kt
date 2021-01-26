@@ -3,6 +3,7 @@ package io.github.pacdouglas.starwarssearch
 import io.github.pacdouglas.starwarssearch.controller.SearchApiController
 import io.github.pacdouglas.starwarssearch.model.StarWarsInfoSearchCount
 import io.github.pacdouglas.starwarssearch.repository.StarWarsInfoSearchCountRepository
+import io.github.pacdouglas.starwarssearch.data.MetricsUpdater
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,7 +29,9 @@ class StarwarsSearchApplicationTests @Autowired constructor(private val controll
 		find("people", "Darth Vader", 5)
 		find("people", "Han Solo", 5)
 
-		Thread.sleep(1000) // The metrics run in parallel
+		while (MetricsUpdater.isUpdating()) {
+			Thread.sleep(10)
+		}
 
 		assertEquals(listOf(5L, 5L, 5L), getMetrics().map { it.count })
 	}
@@ -42,7 +45,9 @@ class StarwarsSearchApplicationTests @Autowired constructor(private val controll
 		find("planets", "Tholoth", 15)
 		find("people", "Han Solo", 2)
 
-		Thread.sleep(1000) // The metrics run in parallel
+		while (MetricsUpdater.isUpdating()) {
+			Thread.sleep(10)
+		}
 
 		assertEquals(listOf("Tholoth", "Darth Vader", "Luke Sky", "Han Solo"), getMetrics().map { it.searchedName })
 	}
@@ -61,7 +66,9 @@ class StarwarsSearchApplicationTests @Autowired constructor(private val controll
 		pool.shutdown()
 		pool.awaitTermination(10, SECONDS)
 
-		Thread.sleep(7000) // Waiting the update of metrics
+		while (MetricsUpdater.isUpdating()) {
+			Thread.sleep(10)
+		}
 
 		assertEquals(10000, getMetrics().firstOrNull()?.count)
 	}

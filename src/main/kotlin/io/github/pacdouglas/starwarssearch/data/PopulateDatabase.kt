@@ -1,4 +1,4 @@
-package io.github.pacdouglas.starwarssearch.service
+package io.github.pacdouglas.starwarssearch.data
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper

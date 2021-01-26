@@ -25,7 +25,7 @@ RUN mkdir -p /starwarsdb
 RUN ln -s /starwarsdb ~/starwarsdb
 
 COPY ./ /root/starwars-search
-RUN mvn clean package -f /root/starwars-search/pom.xml -DskipTests
+RUN mvn clean package -f /root/starwars-search/pom.xml
 
 RUN cp /root/starwars-search/target/*.jar /starwars-search.jar
 
